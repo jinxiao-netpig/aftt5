@@ -194,6 +194,7 @@ class T5LayerFF(nn.Module):
 #         return (attn_output, position_bias)
 
 
+# AFTT5
 class T5Attention(nn.Module):
     def __init__(self, config: T5Config, has_relative_attention_bias=False):
         super().__init__()
@@ -216,16 +217,24 @@ class T5Attention(nn.Module):
 
     def forward(self, x, mask=None, key_value_states=None, position_bias=None, ):
         B, T, _ = x.shape
-        Q = self.q(x).view(B, T, self.hidden_dim)
-        K = self.k(x).view(B, T, self.hidden_dim)
-        V = self.v(x).view(B, T, self.hidden_dim)
-        device = torch.device("cuda")
-        temp_wbias = nn.Parameter(torch.Tensor(T, T)).unsqueeze(0).to(device)
-        nn.init.xavier_uniform_(temp_wbias)
 
-        # def unshape(states):
-        #     """reshape"""
-        #     return states.transpose(1, 2).contiguous().view(B, 1, self.hidden_dim)
+        def shape(states):
+            """projection"""
+            return states.view(B, -1, self.n_heads, self.key_value_proj_dim).transpose(1, 2)
+
+        def unshape(states):
+            """reshape"""
+            return states.transpose(1, 2).contiguous().view(B, -1, self.hidden_dim)
+
+        Q = self.q(x).view(B, T, self.hidden_dim)
+        Q = torch.reshape(Q, (B, self.n_heads, T, self.key_value_proj_dim))
+        K = self.k(x).view(B, T, self.hidden_dim)
+        K = torch.reshape(K, (B, self.n_heads, T, self.key_value_proj_dim))
+        V = self.v(x).view(B, T, self.hidden_dim)
+        V = torch.reshape(V, (B, self.n_heads, T, self.key_value_proj_dim))
+        device = torch.device("cuda")
+        temp_wbias = nn.Parameter(torch.Tensor(self.n_heads, T, T)).unsqueeze(0).to(device)
+        nn.init.xavier_uniform_(temp_wbias)
 
         if mask is not None:
             # Masking happens here, masked elements in the mask have the value of -inf
@@ -233,17 +242,13 @@ class T5Attention(nn.Module):
             # mask = unshape(mask)
             temp_wbias = temp_wbias + mask
 
-        # sequences can still be variable length
-
-        '''
-        From the paper
-        '''
         Q_sig = torch.sigmoid(Q)
         temp = torch.exp(temp_wbias) @ torch.mul(torch.exp(K), V)
         weighted = temp / (torch.exp(temp_wbias) @ torch.exp(K))
         Yt = torch.mul(Q_sig, weighted)
 
-        Yt = Yt.view(B, T, self.hidden_dim)
+        # Yt = Yt.view(B, T, self.hidden_dim)
+        Yt = unshape(Yt)
         Yt = self.o(Yt)
 
         return (Yt, temp_wbias)

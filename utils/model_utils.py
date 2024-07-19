@@ -73,8 +73,9 @@ def get_tokenizer(args):
 def load_dataset_splits(args):
     if args.mode == 'pt':
         dataset = datasets.load_dataset(
-            'D:\\Term of Master about Learning\\Natural Language Processing\\nanoT5\\nanoT5-main\\nanoT5\\c4\\en',
-            # 'en',
+            # 'D:\\Program Files\\GithubRepositorySet\\aftt5\\c4\\en',
+            'c4',
+            'en',
             streaming=True,
         )
 
@@ -88,8 +89,8 @@ def load_dataset_splits(args):
         }
 
         assert (
-            dataset['train'].n_shards == 1
-            # dataset['train'].n_shards == 1024
+            # dataset['train'].n_shards == 1
+            dataset['train'].n_shards == 1024
         ), "We want to have many shards for efficient processing with num_workes in PyTorch dataloader"
     elif args.mode == 'ft':
         dataset_splits = datasets.load_dataset(

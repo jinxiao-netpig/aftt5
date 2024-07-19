@@ -6,14 +6,15 @@ defaults:
 # Experiment args
 mode: 'pt'
 device: gpu
-precision: 'fp16'
+precision: 'bf16'
+#precision: 'fp16'
 eval_only: false
 predict_only: false
 seed: 2137
 
 model:
   klass: local_t5
-  name: 'D:\Term of Master about Learning\Natural Language Processing\nanoT5\nanoT5-main\nanoT5\model'
+  name: 'D:\Program Files\GithubRepositorySet\aftt5\model'
   overwrite:
     dropout_rate: 0.0
   add_config:
