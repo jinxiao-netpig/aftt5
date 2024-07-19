@@ -1,3 +1,13 @@
 
 model/pytorch_model.bin
 c4/en/c4-train.00000-of-01024.json
+.idea/aftt5.iml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+logs/2024-07-19/16-45-58-/.hydra/config.yaml
+logs/2024-07-19/16-45-58-/.hydra/hydra.yaml
+logs/2024-07-19/16-45-58-/.hydra/overrides.yaml
+logs/2024-07-19/16-45-58-/main.log
